@@ -4,84 +4,41 @@
 import csv
 import sqlite3
 import pandas as pd
+import psycopg2 
+from sqlalchemy import create_engine
 
-set mode sqlite> .mode csv
-
-CREATE TABLE nodes (
-    id INTEGER PRIMARY KEY NOT NULL,
-    lat REAL,
-    lon REAL,
-    user TEXT,
-    uid INTEGER,
-    version INTEGER,
-    changeset INTEGER,
-    timestamp TEXT
-);
-
-CREATE TABLE nodes_tags (
-    id INTEGER,
-    key TEXT,
-    value TEXT,
-    type TEXT,
-    FOREIGN KEY (id) REFERENCES nodes(id)
-);
-
-CREATE TABLE ways (
-    id INTEGER PRIMARY KEY NOT NULL,
-    user TEXT,
-    uid INTEGER,
-    version TEXT,
-    changeset INTEGER,
-    timestamp TEXT
-);
-
-CREATE TABLE ways_tags (
-    id INTEGER NOT NULL,
-    key TEXT NOT NULL,
-    value TEXT NOT NULL,
-    type TEXT,
-    FOREIGN KEY (id) REFERENCES ways(id)
-);
-
-CREATE TABLE ways_nodes (
-    id INTEGER NOT NULL,
-    node_id INTEGER NOT NULL,
-    position INTEGER NOT NULL,
-    FOREIGN KEY (id) REFERENCES ways(id),
-    FOREIGN KEY (node_id) REFERENCES nodes(id)
-);
+NODES = pd.read_csv("nodes.csv")
+NODE_TAGS = pd.read_csv("nodes_tags.csv")
+WAYS = pd.read_csv("ways.csv")
+WAY_NODES = pd.read_csv("ways_nodes.csv")
+WAY_TAGS = pd.read_csv("ways_tags.csv")
 
 
-NODES_PATH = "nodes.csv"
-NODE_TAGS_PATH = "nodes_tags.csv"
-WAYS_PATH = "ways.csv"
-WAY_NODES_PATH = "ways_nodes.csv"
-WAY_TAGS_PATH = "ways_tags.csv"
+#con = sa.create_engine('postgresql:////localhost/openstreetmaps.db')
+#NODES = pd.read_csv('nodes.csv', chunksize=100000)
+#for node in NODES:
+#    node.to_sql(name='nodes', if_exists='append', con=con)
 
 
-import file sqlite> NODES_PATH nodes
-import file sqlite> NODE_TAGS_PATH nodes_tags
-import file sqlite> WAYS_PATH ways
-import file sqlite> WAY_NODES_PATH ways_tags
-import file sqlite> WAY_TAGS_PATH ways_nodes
+eng = create_engine('openstreetmaps.db')
+conn = eng.connect()
+NODES.to_sql('nodes', conn, if_exists='append')    
+#NODE_TAGS.to_sql('node_tags',conn)      
+#WAYS.to_sql('ways',conn)
+#WAYS_NODES.to_sql('ways_nodes',conn)         
+#WAYS_TAGS.to_sql('ways_tags',conn) 
+
+#http://odo.pydata.org/en/latest/perf.html
 
 
-```sql
-SELECT tags.value, COUNT(*) as count 
-FROM (SELECT * FROM nodes_tags 
-	  UNION ALL 
-      SELECT * FROM ways_tags) tags
-WHERE tags.key='postcode'
-GROUP BY tags.value
-ORDER BY count DESC;
-```
+#sql
+#SELECT tags.value, COUNT(*) as count 
+#FROM (SELECT * FROM nodes_tags 
+#	  UNION ALL 
+#      SELECT * FROM ways_tags) tags
+#WHERE tags.key='postcode'
+#GROUP BY tags.value
+#ORDER BY count DESC;
 
 
-```sql
-sqlite> SELECT e.user, COUNT(*) as num
-FROM (SELECT user FROM nodes UNION ALL SELECT user FROM ways) e
-GROUP BY e.user
-ORDER BY num DESC
-LIMIT 10;
-```
 
