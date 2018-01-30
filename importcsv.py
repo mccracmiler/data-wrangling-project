@@ -52,6 +52,7 @@ most_active_way_users = pd.read_sql("SELECT user, COUNT(*) as num FROM ways \
         GROUP BY user ORDER by num DESC Limit 3",eng);
 print "Most active ways contributors:", most_active_way_users
 
+'''
 getid = pd.read_sql("SELECT id FROM node_tags \
         WHERE value = 'Notre Dame de Namur University'",eng);
 print "Get id:", getid
@@ -59,10 +60,16 @@ print "Get id:", getid
 getdata = pd.read_sql("SELECT key, value FROM node_tags \
         WHERE id = '358763902'",eng);
 print "Data:", getdata
+'''
 
+getdata3 = pd.read_sql("SELECT key, value FROM node_tags \
+        WHERE id IN (SELECT id FROM node_tags WHERE value = 'Notre Dame de Namur University')",eng);
+print "Data:", getdata
+
+'''
 getdata2 = pd.read_sql("SELECT key, value FROM node_tags\
         (SELECT id AS getid FROM node_tags WHERE value = 'Notre Dame de Namur University')\
           AS subquery WHERE id = getid",eng);
 print "Data:", getdata
-
+'''
  
